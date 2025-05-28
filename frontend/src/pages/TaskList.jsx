@@ -129,8 +129,8 @@ const TaskList = () => {
       
       {/* Filters */}
       <div className="bg-white rounded-lg shadow p-4 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
+        <div className="flex flex-wrap gap-4">
+          <div className="flex-1 min-w-[250px]">
             <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
             <input
               type="text"
@@ -141,7 +141,7 @@ const TaskList = () => {
               className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
-          <div>
+          <div className="flex-1 min-w-[200px]">
             <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
             <select
               name="status"
@@ -155,7 +155,7 @@ const TaskList = () => {
               <option value="completed">Completed</option>
             </select>
           </div>
-          <div>
+          <div className="flex-1 min-w-[200px]">
             <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
             <select
               name="priority"
@@ -169,10 +169,10 @@ const TaskList = () => {
               <option value="high">High</option>
             </select>
           </div>
-          <div className="flex items-end">
+          <div className="flex items-end min-w-[120px]">
             <button
               onClick={() => setFilters({ status: '', priority: '', search: '' })}
-              className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium"
+              className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium w-full"
             >
               Clear Filters
             </button>

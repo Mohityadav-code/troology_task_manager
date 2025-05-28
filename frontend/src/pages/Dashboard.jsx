@@ -27,7 +27,7 @@ const Dashboard = () => {
     .slice(0, 5);
 
   return (
-    <div className="fade-in">
+    <div className="fade-in p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
         {(isAdmin || isManager) && (
@@ -41,8 +41,8 @@ const Dashboard = () => {
       </div>
 
       {/* Task Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300 border-l-4 border-blue-500">
+      <div className="flex flex-wrap gap-4 mb-8">
+        <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300 border-l-4 border-blue-500 flex-1 min-w-[250px]">
           <div className="flex justify-between items-center">
             <div>
               <p className="text-sm text-gray-500 mb-1">Total Tasks</p>
@@ -54,7 +54,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300 border-l-4 border-yellow-500">
+        <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300 border-l-4 border-yellow-500 flex-1 min-w-[250px]">
           <div className="flex justify-between items-center">
             <div>
               <p className="text-sm text-gray-500 mb-1">Pending</p>
@@ -66,7 +66,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300 border-l-4 border-indigo-500">
+        <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300 border-l-4 border-indigo-500 flex-1 min-w-[250px]">
           <div className="flex justify-between items-center">
             <div>
               <p className="text-sm text-gray-500 mb-1">In Progress</p>
@@ -78,7 +78,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300 border-l-4 border-green-500">
+        <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300 border-l-4 border-green-500 flex-1 min-w-[250px]">
           <div className="flex justify-between items-center">
             <div>
               <p className="text-sm text-gray-500 mb-1">Completed</p>
