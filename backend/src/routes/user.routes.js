@@ -3,8 +3,8 @@ const router = express.Router();
 const userController = require('../controllers/user.controller');
 const { protect, authorize } = require('../middleware/auth.middleware');
 
-// Admin only
-router.get('/', protect, authorize('admin'), userController.getUsers);
+// Admin and manager can access users list
+router.get('/', protect, authorize('admin', 'manager'), userController.getUsers);
 
 // Authenticated users
 router.get('/profile', protect, userController.getUserProfile);
