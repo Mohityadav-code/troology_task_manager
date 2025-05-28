@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout, selectUser, selectIsAuthenticated, selectIsAdmin, selectIsManager } from '../redux/slices/authSlice';
@@ -12,6 +12,26 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  
+  // Function to check if current screen is mobile
+  const isMobile = () => {
+    return windowWidth < 768; // 768px is the md breakpoint in Tailwind
+  };
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+      // Close mobile menu when switching to desktop
+      if (window.innerWidth >= 768) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   const handleLogout = async () => {
     await dispatch(logout());
@@ -23,7 +43,8 @@ const Navbar = () => {
     return location.pathname === path ? 'border-blue-500 text-blue-500' : 'border-transparent text-gray-500';
   };
 
-  return (
+  // Desktop Navigation Component
+  const DesktopNavigation = () => (
     <nav className="bg-white shadow-md fixed w-full z-50">
       <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
@@ -32,7 +53,7 @@ const Navbar = () => {
               <Link to="/" className="text-xl font-bold text-blue-600">TaskManager</Link>
             </div>
             {isAuthenticated && (
-              <div className="hidden md:block lg:block md:flex md:ml-6 md:space-x-8">
+              <div className="flex ml-6 space-x-8">
                 <Link to="/dashboard" className={`${isActive('/dashboard')} hover:border-blue-500 hover:text-blue-500 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
                   Dashboard
                 </Link>
@@ -52,7 +73,7 @@ const Navbar = () => {
               </div>
             )}
           </div>
-          <div className="hidden md:flex md:ml-6 md:items-center">
+          <div className="flex ml-6 items-center">
             {isAuthenticated ? (
               <div className="ml-3 relative flex items-center">
                 <Link to="/profile" className="text-sm font-medium text-gray-700 mr-4 hover:text-blue-500">
@@ -70,7 +91,6 @@ const Navbar = () => {
                 <Link to="/login" className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium">
                   Login
                 </Link>
-                {/* Only show register for development or if specifically allowed */}
                 {process.env.NODE_ENV === 'development' && (
                   <Link to="/register" className="bg-white text-blue-500 border border-blue-500 px-4 py-2 rounded-md text-sm font-medium">
                     Register (Dev)
@@ -79,8 +99,20 @@ const Navbar = () => {
               </div>
             )}
           </div>
-          {/* Mobile menu button - Only show on small screens */}
-          <div className="md:hidden lg:hidden sm:block flex items-center">
+        </div>
+      </div>
+    </nav>
+  );
+
+  // Mobile Navigation Component
+  const MobileNavigation = () => (
+    <nav className="bg-white shadow-md fixed w-full z-50">
+      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          <div className="flex items-center">
+            <Link to="/" className="text-xl font-bold text-blue-600">TaskManager</Link>
+          </div>
+          <div className="flex items-center">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
@@ -100,9 +132,9 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile menu - Only show when menu is open */}
+      {/* Mobile menu dropdown */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white shadow-lg border-t border-gray-200">
+        <div className="bg-white shadow-lg border-t border-gray-200">
           <div className="pt-2 pb-3 space-y-1">
             {isAuthenticated && (
               <>
@@ -197,6 +229,9 @@ const Navbar = () => {
       )}
     </nav>
   );
+
+  // Render based on screen size
+  return isMobile() ? <MobileNavigation /> : <DesktopNavigation />;
 };
 
 export default Navbar;
