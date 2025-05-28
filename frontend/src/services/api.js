@@ -9,7 +9,7 @@ console.log('Using API URL:', API_URL);
 
 // Create axios instance
 const api = axios.create({
-  baseURL: 'https://ominous-halibut-7xw764vx44jfx6ww-5001.app.github.dev/',
+  baseURL: 'https://ominous-halibut-7xw764vx44jfx6ww-5001.app.github.dev/api',
   withCredentials: true, // to allow cookies to be sent
   headers: {
     'Content-Type': 'application/json',
