@@ -49,7 +49,6 @@ const App = () => {
             <Route path="/" element={<ProtectedRoute><Navigate to="/dashboard" /></ProtectedRoute>} />
             <Route path="dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="tasks" element={<ProtectedRoute><TaskList /></ProtectedRoute>} />
-            <Route path="tasks/new" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><TaskForm /></ProtectedRoute>} />
             <Route path="tasks/:id" element={<ProtectedRoute><TaskForm viewOnly={true} /></ProtectedRoute>} />
             <Route path="tasks/:id/edit" element={<ProtectedRoute><TaskForm /></ProtectedRoute>} />
             <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

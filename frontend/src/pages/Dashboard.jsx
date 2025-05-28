@@ -32,7 +32,7 @@ const Dashboard = () => {
         <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
         {(isAdmin || isManager) && (
           <Link 
-            to="/tasks/new" 
+            to="/tasks" 
             className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md transition-colors duration-300"
           >
             Create Task

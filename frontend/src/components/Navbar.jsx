@@ -60,11 +60,6 @@ const Navbar = () => {
                 <Link to="/tasks" className={`${isActive('/tasks')} hover:border-blue-500 hover:text-blue-500 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
                   Tasks
                 </Link>
-                {(isAdmin || isManager) && (
-                  <Link to="/tasks/new" className={`${isActive('/tasks/new')} hover:border-blue-500 hover:text-blue-500 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
-                    Create Task
-                  </Link>
-                )}
                 {isAdmin && (
                   <Link to="/users" className={`${isActive('/users')} hover:border-blue-500 hover:text-blue-500 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
                     Users
@@ -152,15 +147,6 @@ const Navbar = () => {
                 >
                   Tasks
                 </Link>
-                {(isAdmin || isManager) && (
-                  <Link 
-                    to="/tasks/new" 
-                    className={`block pl-3 pr-4 py-2 border-l-4 ${isActive('/tasks/new') ? 'border-blue-500 text-blue-500 bg-blue-50' : 'border-transparent text-gray-600'} hover:bg-gray-50 hover:border-blue-500 hover:text-blue-500`}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Create Task
-                  </Link>
-                )}
                 {isAdmin && (
                   <Link 
                     to="/users" 

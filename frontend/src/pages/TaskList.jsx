@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { fetchTasks, deleteTask, selectTasks, selectTasksLoading } from '../redux/slices/taskSlice';
+import { fetchTasks, deleteTask, createTask, selectTasks, selectTasksLoading } from '../redux/slices/taskSlice';
 import { selectUser, selectIsAdmin, selectIsManager } from '../redux/slices/authSlice';
+import { fetchUsers, selectUsers } from '../redux/slices/userSlice';
 import { toast } from 'react-toastify';
 
 const TaskList = () => {
@@ -13,6 +14,7 @@ const TaskList = () => {
   const user = useSelector(selectUser);
   const isAdmin = useSelector(selectIsAdmin);
   const isManager = useSelector(selectIsManager);
+  const users = useSelector(selectUsers);
   
   // Filtering and pagination state
   const [filters, setFilters] = useState({
@@ -24,10 +26,25 @@ const TaskList = () => {
   const [sortField, setSortField] = useState('dueDate');
   const [sortOrder, setSortOrder] = useState('asc');
   const tasksPerPage = 10;
+
+  // Task creation form state
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    status: 'pending',
+    priority: 'medium',
+    dueDate: new Date().toISOString().split('T')[0],
+    assignedTo: ''
+  });
+  const [formErrors, setFormErrors] = useState({});
   
   useEffect(() => {
     dispatch(fetchTasks());
-  }, [dispatch]);
+    if (isAdmin || isManager) {
+      dispatch(fetchUsers());
+    }
+  }, [dispatch, isAdmin, isManager]);
   
   // Handle filter changes
   const handleFilterChange = (e) => {
@@ -58,6 +75,66 @@ const TaskList = () => {
       } catch (error) {
         toast.error(error || 'Failed to delete task');
       }
+    }
+  };
+
+  // Form validation for task creation
+  const validateForm = () => {
+    const errors = {};
+    
+    if (!formData.title.trim()) {
+      errors.title = 'Title is required';
+    }
+    
+    if (!formData.description.trim()) {
+      errors.description = 'Description is required';
+    }
+    
+    if (!formData.dueDate) {
+      errors.dueDate = 'Due date is required';
+    }
+    
+    if (!formData.assignedTo) {
+      errors.assignedTo = 'Assignee is required';
+    }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+  
+  // Handle form field changes
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    // Clear error when field is changed
+    if (formErrors[name]) {
+      setFormErrors((prev) => ({ ...prev, [name]: null }));
+    }
+  };
+  
+  // Handle task creation form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
+    try {
+      await dispatch(createTask({ ...formData, creator: user._id })).unwrap();
+      toast.success('Task created successfully');
+      setFormData({
+        title: '',
+        description: '',
+        status: 'pending',
+        priority: 'medium',
+        dueDate: new Date().toISOString().split('T')[0],
+        assignedTo: ''
+      });
+      setShowForm(false);
+    } catch (error) {
+      toast.error(error || 'Failed to create task');
     }
   };
   
@@ -105,7 +182,7 @@ const TaskList = () => {
     pageNumbers.push(i);
   }
   
-  if (loading) {
+  if (loading && tasks.length === 0) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -118,64 +195,184 @@ const TaskList = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Tasks</h1>
         {(isAdmin || isManager) && (
-          <Link 
-            to="/tasks/new" 
+          <button
+            onClick={() => setShowForm(!showForm)}
             className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium"
           >
-            Create Task
-          </Link>
+            {showForm ? 'Cancel' : 'Create Task'}
+          </button>
         )}
       </div>
+
+      {/* Task Creation Form */}
+      {showForm && (isAdmin || isManager) && (
+        <div className="bg-white rounded-lg shadow-md mb-6 overflow-hidden">
+          <div className="flex justify-between items-center p-4 border-b border-gray-200 bg-gray-50">
+            <h2 className="text-lg font-semibold text-gray-800">Create New Task</h2>
+            <button 
+              onClick={() => setShowForm(false)}
+              className="text-gray-500 hover:text-gray-700 focus:outline-none"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          
+          <form onSubmit={handleSubmit} className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-gray-700">Title</label>
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleFormChange}
+                  className={`w-full border ${formErrors.title ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500`}
+                  placeholder="Enter task title"
+                />
+                {formErrors.title && <p className="text-sm text-red-600">{formErrors.title}</p>}
+              </div>
+              
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-gray-700">Due Date</label>
+                <input
+                  type="date"
+                  name="dueDate"
+                  value={formData.dueDate}
+                  onChange={handleFormChange}
+                  className={`w-full border ${formErrors.dueDate ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500`}
+                />
+                {formErrors.dueDate && <p className="text-sm text-red-600">{formErrors.dueDate}</p>}
+              </div>
+              
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-gray-700">Status</label>
+                <select
+                  name="status"
+                  value={formData.status}
+                  onChange={handleFormChange}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+              
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-gray-700">Priority</label>
+                <select
+                  name="priority"
+                  value={formData.priority}
+                  onChange={handleFormChange}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
+              
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-gray-700">Assigned To</label>
+                <select
+                  name="assignedTo"
+                  value={formData.assignedTo}
+                  onChange={handleFormChange}
+                  className={`w-full border ${formErrors.assignedTo ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500`}
+                >
+                  <option value="">Select Assignee</option>
+                  {users.map(user => (
+                    <option key={user._id} value={user._id}>
+                      {user.name} ({user.role})
+                    </option>
+                  ))}
+                </select>
+                {formErrors.assignedTo && <p className="text-sm text-red-600">{formErrors.assignedTo}</p>}
+              </div>
+              
+              <div className="md:col-span-2 space-y-1">
+                <label className="block text-sm font-medium text-gray-700">Description</label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleFormChange}
+                  rows="3"
+                  className={`w-full border ${formErrors.description ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500`}
+                  placeholder="Enter task description"
+                ></textarea>
+                {formErrors.description && <p className="text-sm text-red-600">{formErrors.description}</p>}
+              </div>
+            </div>
+            
+            <div className="flex justify-end mt-6 pt-4 border-t border-gray-200">
+              <button
+                type="submit"
+                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                disabled={loading}
+              >
+                {loading ? 'Creating...' : 'Create Task'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
       
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
-        <div className="flex flex-wrap items-end gap-4">
-          <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
-            <input
-              type="text"
-              name="search"
-              value={filters.search}
-              onChange={handleFilterChange}
-              placeholder="Search tasks..."
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-          <div className="flex-1 min-w-[180px]">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select
-              name="status"
-              value={filters.status}
-              onChange={handleFilterChange}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">All</option>
-              <option value="pending">Pending</option>
-              <option value="in-progress">In Progress</option>
-              <option value="completed">Completed</option>
-            </select>
-          </div>
-          <div className="flex-1 min-w-[180px]">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-            <select
-              name="priority"
-              value={filters.priority}
-              onChange={handleFilterChange}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">All</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
-          </div>
-          <div className="flex-0 w-[120px]">
-            <button
-              onClick={() => setFilters({ status: '', priority: '', search: '' })}
-              className="bg-gray-200 hover:bg-gray-300 whitespace-nowrap text-gray-700 px-4 py-2 rounded-md text-sm font-medium w-full h-[42px]"
-            >
-              Clear Filters
-            </button>
+      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div className="border-b border-gray-200 bg-gray-50 px-4 py-3">
+          <h3 className="text-sm font-medium text-gray-700">Filter Tasks</h3>
+        </div>
+        <div className="p-4">
+          <div className="flex flex-wrap items-end gap-4">
+            <div className="flex-1 min-w-[200px] space-y-1">
+              <label className="block text-sm font-medium text-gray-700">Search</label>
+              <input
+                type="text"
+                name="search"
+                value={filters.search}
+                onChange={handleFilterChange}
+                placeholder="Search tasks..."
+                className="w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div className="flex-1 min-w-[180px] space-y-1">
+              <label className="block text-sm font-medium text-gray-700">Status</label>
+              <select
+                name="status"
+                value={filters.status}
+                onChange={handleFilterChange}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">All</option>
+                <option value="pending">Pending</option>
+                <option value="in-progress">In Progress</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+            <div className="flex-1 min-w-[180px] space-y-1">
+              <label className="block text-sm font-medium text-gray-700">Priority</label>
+              <select
+                name="priority"
+                value={filters.priority}
+                onChange={handleFilterChange}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">All</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+            <div className="flex-0 w-[120px]">
+              <button
+                onClick={() => setFilters({ status: '', priority: '', search: '' })}
+                className="bg-gray-100 whitespace-nowrap hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium w-full h-[42px] border border-gray-300 shadow-sm transition-colors duration-200"
+              >
+                Clear Filters
+              </button>
+            </div>
           </div>
         </div>
       </div>
