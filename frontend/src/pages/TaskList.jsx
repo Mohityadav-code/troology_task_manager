@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { fetchTasks, deleteTask, selectTasks, selectTasksLoading } from '../redux/slices/taskSlice';
-import { selectUser, selectIsAdmin } from '../redux/slices/authSlice';
+import { selectUser, selectIsAdmin, selectIsManager } from '../redux/slices/authSlice';
 import { toast } from 'react-toastify';
 
 const TaskList = () => {
@@ -12,6 +12,7 @@ const TaskList = () => {
   const loading = useSelector(selectTasksLoading);
   const user = useSelector(selectUser);
   const isAdmin = useSelector(selectIsAdmin);
+  const isManager = useSelector(selectIsManager);
   
   // Filtering and pagination state
   const [filters, setFilters] = useState({
@@ -92,7 +93,7 @@ const TaskList = () => {
     return 0;
   });
   
-  // Calculate pagination
+  // Calculate pagination 
   const indexOfLastTask = currentPage * tasksPerPage;
   const indexOfFirstTask = indexOfLastTask - tasksPerPage;
   const currentTasks = sortedTasks.slice(indexOfFirstTask, indexOfLastTask);
@@ -116,7 +117,7 @@ const TaskList = () => {
     <div className="container mx-auto px-4 py-8 pt-20">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Tasks</h1>
-        {(isAdmin || user?.role === 'manager') && (
+        {(isAdmin || isManager) && (
           <Link 
             to="/tasks/new" 
             className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium"
@@ -281,7 +282,7 @@ const TaskList = () => {
                       >
                         View
                       </button>
-                      {(isAdmin || user?._id === task.creator || user?._id === task.assignedTo) && (
+                      {(isAdmin || isManager || user?._id === task.creator || user?._id === task.assignedTo) && (
                         <button
                           onClick={() => navigate(`/tasks/${task._id}/edit`)}
                           className="text-indigo-600 hover:text-indigo-900 mr-4"

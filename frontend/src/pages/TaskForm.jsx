@@ -19,6 +19,7 @@ const TaskForm = ({ viewOnly = false }) => {
   const currentUser = useSelector(selectUser);
   const isAdmin = useSelector(selectIsAdmin);
   const isManager = useSelector(selectIsManager);
+  const isEmployee = currentUser?.role === 'employee';
   
   const [formData, setFormData] = useState({
     title: '',
@@ -73,6 +74,12 @@ const TaskForm = ({ viewOnly = false }) => {
     if (viewOnly) return; // No changes in view mode
     
     const { name, value } = e.target;
+    
+    // If employee is editing, only allow status changes
+    if (isEmployee && isEditMode && name !== 'status') {
+      return;
+    }
+    
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -96,7 +103,12 @@ const TaskForm = ({ viewOnly = false }) => {
     
     try {
       if (isEditMode) {
-        await dispatch(updateTask({ id, taskData: formData })).unwrap();
+        // For employees, only send the status field when updating
+        const taskDataToUpdate = isEmployee 
+          ? { status: formData.status } 
+          : formData;
+          
+        await dispatch(updateTask({ id, taskData: taskDataToUpdate })).unwrap();
         toast.success('Task updated successfully');
       } else {
         await dispatch(createTask({ ...formData, creator: currentUser._id })).unwrap();
@@ -115,6 +127,13 @@ const TaskForm = ({ viewOnly = false }) => {
     currentUser?._id === currentTask.creator?._id || 
     currentUser?._id === currentTask.assignedTo?._id
   );
+
+  // Determine if a field should be disabled
+  const isFieldDisabled = (fieldName) => {
+    if (viewOnly) return true;
+    if (isEditMode && isEmployee && fieldName !== 'status') return true;
+    return false;
+  };
   
   if (loading && id) {
     return (
@@ -140,8 +159,8 @@ const TaskForm = ({ viewOnly = false }) => {
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                disabled={viewOnly}
-                className={`w-full border ${errors.title ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 ${viewOnly ? 'bg-gray-50 cursor-not-allowed' : 'focus:outline-none focus:ring-blue-500 focus:border-blue-500'}`}
+                disabled={isFieldDisabled('title')}
+                className={`w-full border ${errors.title ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 ${isFieldDisabled('title') ? 'bg-gray-50 cursor-not-allowed' : 'focus:outline-none focus:ring-blue-500 focus:border-blue-500'}`}
               />
               {errors.title && !viewOnly && <p className="text-red-500 text-xs mt-1">{errors.title}</p>}
             </div>
@@ -152,9 +171,9 @@ const TaskForm = ({ viewOnly = false }) => {
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                disabled={viewOnly}
+                disabled={isFieldDisabled('description')}
                 rows="4"
-                className={`w-full border ${errors.description ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 ${viewOnly ? 'bg-gray-50 cursor-not-allowed' : 'focus:outline-none focus:ring-blue-500 focus:border-blue-500'}`}
+                className={`w-full border ${errors.description ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 ${isFieldDisabled('description') ? 'bg-gray-50 cursor-not-allowed' : 'focus:outline-none focus:ring-blue-500 focus:border-blue-500'}`}
               ></textarea>
               {errors.description && !viewOnly && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
             </div>
@@ -166,8 +185,8 @@ const TaskForm = ({ viewOnly = false }) => {
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
-                  disabled={viewOnly}
-                  className={`w-full border border-gray-300 rounded-md px-3 py-2 ${viewOnly ? 'bg-gray-50 cursor-not-allowed' : 'focus:outline-none focus:ring-blue-500 focus:border-blue-500'}`}
+                  disabled={isFieldDisabled('status')}
+                  className={`w-full border border-gray-300 rounded-md px-3 py-2 ${isFieldDisabled('status') ? 'bg-gray-50 cursor-not-allowed' : 'focus:outline-none focus:ring-blue-500 focus:border-blue-500'}`}
                 >
                   <option value="pending">Pending</option>
                   <option value="in-progress">In Progress</option>
@@ -181,8 +200,8 @@ const TaskForm = ({ viewOnly = false }) => {
                   name="priority"
                   value={formData.priority}
                   onChange={handleChange}
-                  disabled={viewOnly}
-                  className={`w-full border border-gray-300 rounded-md px-3 py-2 ${viewOnly ? 'bg-gray-50 cursor-not-allowed' : 'focus:outline-none focus:ring-blue-500 focus:border-blue-500'}`}
+                  disabled={isFieldDisabled('priority')}
+                  className={`w-full border border-gray-300 rounded-md px-3 py-2 ${isFieldDisabled('priority') ? 'bg-gray-50 cursor-not-allowed' : 'focus:outline-none focus:ring-blue-500 focus:border-blue-500'}`}
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -199,8 +218,8 @@ const TaskForm = ({ viewOnly = false }) => {
                   name="dueDate"
                   value={formData.dueDate}
                   onChange={handleChange}
-                  disabled={viewOnly}
-                  className={`w-full border ${errors.dueDate ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 ${viewOnly ? 'bg-gray-50 cursor-not-allowed' : 'focus:outline-none focus:ring-blue-500 focus:border-blue-500'}`}
+                  disabled={isFieldDisabled('dueDate')}
+                  className={`w-full border ${errors.dueDate ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 ${isFieldDisabled('dueDate') ? 'bg-gray-50 cursor-not-allowed' : 'focus:outline-none focus:ring-blue-500 focus:border-blue-500'}`}
                 />
                 {errors.dueDate && !viewOnly && <p className="text-red-500 text-xs mt-1">{errors.dueDate}</p>}
               </div>
@@ -211,8 +230,8 @@ const TaskForm = ({ viewOnly = false }) => {
                   name="assignedTo"
                   value={formData.assignedTo}
                   onChange={handleChange}
-                  disabled={viewOnly}
-                  className={`w-full border ${errors.assignedTo ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 ${viewOnly ? 'bg-gray-50 cursor-not-allowed' : 'focus:outline-none focus:ring-blue-500 focus:border-blue-500'}`}
+                  disabled={isFieldDisabled('assignedTo')}
+                  className={`w-full border ${errors.assignedTo ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 ${isFieldDisabled('assignedTo') ? 'bg-gray-50 cursor-not-allowed' : 'focus:outline-none focus:ring-blue-500 focus:border-blue-500'}`}
                 >
                   <option value="">Select Assignee</option>
                   {users.map(user => (
@@ -240,6 +259,14 @@ const TaskForm = ({ viewOnly = false }) => {
                     {new Date(currentTask.createdAt).toLocaleString()}
                   </div>
                 </div>
+              </div>
+            )}
+
+            {isEditMode && isEmployee && (
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
+                <p className="text-blue-700 text-sm">
+                  As an employee, you can only update the status of this task.
+                </p>
               </div>
             )}
             
