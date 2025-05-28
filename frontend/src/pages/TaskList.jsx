@@ -220,7 +220,8 @@ const TaskList = () => {
           </div>
           
           <form onSubmit={handleSubmit} className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
+              {/* Title - Full Width */}
               <div className="space-y-1">
                 <label className="block text-sm font-medium text-gray-700">Title</label>
                 <input
@@ -234,65 +235,8 @@ const TaskList = () => {
                 {formErrors.title && <p className="text-sm text-red-600">{formErrors.title}</p>}
               </div>
               
+              {/* Description - Full Width */}
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700">Due Date</label>
-                <input
-                  type="date"
-                  name="dueDate"
-                  value={formData.dueDate}
-                  onChange={handleFormChange}
-                  className={`w-full border ${formErrors.dueDate ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500`}
-                />
-                {formErrors.dueDate && <p className="text-sm text-red-600">{formErrors.dueDate}</p>}
-              </div>
-              
-              <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700">Status</label>
-                <select
-                  name="status"
-                  value={formData.status}
-                  onChange={handleFormChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="pending">Pending</option>
-                  <option value="in-progress">In Progress</option>
-                  <option value="completed">Completed</option>
-                </select>
-              </div>
-              
-              <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700">Priority</label>
-                <select
-                  name="priority"
-                  value={formData.priority}
-                  onChange={handleFormChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-              </div>
-              
-              <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700">Assigned To</label>
-                <select
-                  name="assignedTo"
-                  value={formData.assignedTo}
-                  onChange={handleFormChange}
-                  className={`w-full border ${formErrors.assignedTo ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500`}
-                >
-                  <option value="">Select Assignee</option>
-                  {users.map(user => (
-                    <option key={user._id} value={user._id}>
-                      {user.name} ({user.role})
-                    </option>
-                  ))}
-                </select>
-                {formErrors.assignedTo && <p className="text-sm text-red-600">{formErrors.assignedTo}</p>}
-              </div>
-              
-              <div className="md:col-span-2 space-y-1">
                 <label className="block text-sm font-medium text-gray-700">Description</label>
                 <textarea
                   name="description"
@@ -303,6 +247,67 @@ const TaskList = () => {
                   placeholder="Enter task description"
                 ></textarea>
                 {formErrors.description && <p className="text-sm text-red-600">{formErrors.description}</p>}
+              </div>
+              
+              {/* 2-column layout for other fields */}
+              <div className="flex flex-wrap gap-4">
+                <div className="flex-1 min-w-[250px] space-y-1">
+                  <label className="block text-sm font-medium text-gray-700">Due Date</label>
+                  <input
+                    type="date"
+                    name="dueDate"
+                    value={formData.dueDate}
+                    onChange={handleFormChange}
+                    className={`w-full border ${formErrors.dueDate ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500`}
+                  />
+                  {formErrors.dueDate && <p className="text-sm text-red-600">{formErrors.dueDate}</p>}
+                </div>
+                
+                <div className="flex-1 min-w-[250px] space-y-1">
+                  <label className="block text-sm font-medium text-gray-700">Status</label>
+                  <select
+                    name="status"
+                    value={formData.status}
+                    onChange={handleFormChange}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </div>
+                
+                <div className="flex-1 min-w-[250px] space-y-1">
+                  <label className="block text-sm font-medium text-gray-700">Priority</label>
+                  <select
+                    name="priority"
+                    value={formData.priority}
+                    onChange={handleFormChange}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                </div>
+                
+                <div className="flex-1 min-w-[250px] space-y-1">
+                  <label className="block text-sm font-medium text-gray-700">Assigned To</label>
+                  <select
+                    name="assignedTo"
+                    value={formData.assignedTo}
+                    onChange={handleFormChange}
+                    className={`w-full border ${formErrors.assignedTo ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500`}
+                  >
+                    <option value="">Select Assignee</option>
+                    {users.map(user => (
+                      <option key={user._id} value={user._id}>
+                        {user.name} ({user.role})
+                      </option>
+                    ))}
+                  </select>
+                  {formErrors.assignedTo && <p className="text-sm text-red-600">{formErrors.assignedTo}</p>}
+                </div>
               </div>
             </div>
             
