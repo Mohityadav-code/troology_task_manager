@@ -2,14 +2,14 @@ import axios from 'axios';
 
 // Use environment-specific API URL
 const API_URL = import.meta.env.PROD 
-  ? 'http://localhost:5001/api'  // Replace with your actual production backend URL when deployed
+  ? 'https://ominous-halibut-7xw764vx44jfx6ww-5001.app.github.dev/'  // Replace with your actual production backend URL when deployed
   : 'http://localhost:5001/api';
 
 console.log('Using API URL:', API_URL);
 
 // Create axios instance
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: 'https://ominous-halibut-7xw764vx44jfx6ww-5001.app.github.dev/',
   withCredentials: true, // to allow cookies to be sent
   headers: {
     'Content-Type': 'application/json',
