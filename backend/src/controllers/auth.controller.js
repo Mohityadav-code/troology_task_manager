@@ -39,14 +39,16 @@ exports.register = async (req, res) => {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+        sameSite: 'none',  // Required for cross-site cookies
       });
 
-      // Return user data
+      // Return user data with token
       res.status(201).json({
         _id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
+        token: token // Include token in response
       });
     } else {
       res.status(400).json({ message: 'Invalid user data' });
@@ -86,14 +88,16 @@ exports.login = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      sameSite: 'none',  // Required for cross-site cookies
     });
 
-    // Return user data
+    // Return user data with token
     res.json({
       _id: user._id,
       name: user.name,
       email: user.email,
       role: user.role,
+      token: token // Include token in response
     });
   } catch (error) {
     console.error(error);
@@ -108,6 +112,8 @@ exports.logout = (req, res) => {
   res.cookie('jwt', '', {
     httpOnly: true,
     expires: new Date(0),
+    sameSite: 'none',
+    secure: true
   });
 
   res.json({ message: 'Logged out successfully' });

@@ -1,26 +1,34 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { login, selectAuth } from '../redux/slices/authSlice';
+import { login, selectAuth, selectIsAuthenticated } from '../redux/slices/authSlice';
 import { toast } from 'react-toastify';
 
 const Login = () => {
   const dispatch = useDispatch();
   const { error } = useSelector(selectAuth);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const { register, handleSubmit, formState: { errors } } = useForm();
+  
+  // Monitor authentication state and redirect when it changes
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
 
   const onSubmit = async (data) => {
     setIsLoading(true);
     try {
       await dispatch(login(data)).unwrap();
       toast.success('Login successful!');
-      navigate('/dashboard');
+      // Force a page reload to ensure the token is properly set
+      window.location.href = '/dashboard';
     } catch (error) {
       toast.error(error || 'Login failed');
-    } finally {
       setIsLoading(false);
     }
   };

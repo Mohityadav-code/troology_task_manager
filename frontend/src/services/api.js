@@ -1,7 +1,13 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5001/api';
+// Use environment-specific API URL
+const API_URL = import.meta.env.PROD 
+  ? 'http://localhost:5001/api'  // Replace with your actual production backend URL when deployed
+  : 'http://localhost:5001/api';
 
+console.log('Using API URL:', API_URL);
+
+// Create axios instance
 const api = axios.create({
   baseURL: API_URL,
   withCredentials: true, // to allow cookies to be sent
@@ -10,26 +16,73 @@ const api = axios.create({
   },
 });
 
+// Add a request interceptor to add token if it exists
+api.interceptors.request.use(
+  (config) => {
+    // Get token from localStorage if it exists
+    const token = localStorage.getItem('auth_token');
+    
+    // If token exists, add it to headers
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 // Auth Services
 export const authService = {
   register: async (userData) => {
     const response = await api.post('/auth/register', userData);
+    // Store token in localStorage
+    if (response.data.token) {
+      localStorage.setItem('auth_token', response.data.token);
+    }
     return response.data;
   },
   
   login: async (credentials) => {
     const response = await api.post('/auth/login', credentials);
+    // Store token in localStorage
+    if (response.data.token) {
+      localStorage.setItem('auth_token', response.data.token);
+    }
     return response.data;
   },
   
   logout: async () => {
-    const response = await api.post('/auth/logout');
-    return response.data;
+    try {
+      const response = await api.post('/auth/logout');
+      // Remove token from localStorage
+      localStorage.removeItem('auth_token');
+      return response.data;
+    } catch (error) {
+      // Even if API call fails, remove token
+      localStorage.removeItem('auth_token');
+      throw error;
+    }
   },
   
   getCurrentUser: async () => {
-    const response = await api.get('/users/profile');
-    return response.data;
+    try {
+      // Try the /auth/me endpoint first
+      const response = await api.get('/auth/me');
+      return response.data;
+    } catch (error) {
+      // Fall back to /users/profile if /auth/me fails
+      try {
+        const response = await api.get('/users/profile');
+        return response.data;
+      } catch (secondError) {
+        // If both fail, throw the error and clear token
+        if (secondError.response && secondError.response.status === 401) {
+          localStorage.removeItem('auth_token');
+        }
+        throw secondError;
+      }
+    }
   },
 };
 
