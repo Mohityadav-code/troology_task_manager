@@ -94,6 +94,44 @@ The frontend development server will run on http://localhost:5173.
 | PUT    | /api/tasks/:id  | Update a task    | Creator or Assignee  |
 | DELETE | /api/tasks/:id  | Delete a task    | Admin only          |
 
+## Environment Setup
+
+### Backend Environment
+Create a `.env` file in the `backend` directory with the following variables:
+
+```
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+NODE_ENV=development
+PORT=5001
+```
+
+- `MONGODB_URI`: Your MongoDB connection string
+- `JWT_SECRET`: Secret key for JWT token generation
+- `NODE_ENV`: Set to `development` for development mode features or `production` for production mode
+- `PORT`: Port number for the backend server (default: 5001)
+
+### Frontend Environment
+Create a `.env` file in the `frontend` directory with the following variables:
+
+```
+NODE_ENV=development
+```
+
+- `NODE_ENV`: Set to `development` for development mode features or `production` for production mode
+
+## Development Mode Features
+
+When running the application in development mode (`NODE_ENV=development`), the following features are available:
+
+1. **User Registration**: Registration is only available in development mode. In production, registration is disabled and users must be created by an administrator.
+2. **Register Button**: The register button is only visible in the navigation when in development mode.
+3. **Debugging Tools**: Additional debugging information is available in the console.
+
+## Important Notes
+
+⚠️ **Warning**: The backend server will automatically sleep after 4 hours of inactivity. This may cause temporary delays when making requests after periods of inactivity. The server will wake up automatically when a new request is received.
+
 ## Role-Based Access
 
 - **Admin**: Full access to manage users and tasks
